@@ -48,46 +48,48 @@ class Vgg19(torch.nn.Module):
 
         i = 0
         model = torch.nn.Sequential()
+        for x in vgg.children():
+            print(x)
         for layer in vgg.children():
-            new_slice = False
+            # new_slice = False
             if isinstance(layer, nn.Conv2d):
                 name = self._conv_names[i]
                 i += 1
-
-                if name in content_layers or name in style_layers:
-                    new_slice = True
-                    self.layer_names.append(name)
-                    self._remaining_layers.remove(name)
-
+            #
+            #     if name in content_layers or name in style_layers:
+            #         new_slice = True
+            #
             elif isinstance(layer, nn.ReLU):
                 name = 'relu{}'.format(i)
-                # layer = nn.ReLU(inplace=False)
-
+            #     # layer = nn.ReLU(inplace=False)
+            #
             elif isinstance(layer, nn.MaxPool2d):
                 name = 'pool{}'.format(i)
-                if name in content_layers or name in style_layers:
-                    new_slice = True
-                    self._remaining_layers.remove(name)
-                layer = nn.AvgPool2d(kernel_size=2, stride=2, padding=0, ceil_mode=False)
-                self.layer_names.append(name)
-
-
-
+            #     if name in content_layers or name in style_layers:
+            #         new_slice = True
+            #         self._remaining_layers.remove(name)
+            #     layer = nn.AvgPool2d(kernel_size=2, stride=2, padding=0, ceil_mode=False)
+            #     self.layer_names.append(name)
+            #
+            #
+            #
             elif isinstance(layer, nn.BatchNorm2d):
                 name = 'bn{}'.format(i)
-
+            #
             model.add_module(name, layer)
-            print(name)
+            # print(name)
             # print(layer)
             # if new_slice:
             self.slices.append(model)
+
+            self.layer_names.append(name)
             model = torch.nn.Sequential()
 
-            if len(self._remaining_layers) < 1:
-                break
+            # if len(self._remaining_layers) < 1:
+            #     break
         print(self.layer_names)
-        if len(self._remaining_layers) > 0:
-            raise Exception('Not all layers provided in content_layes and/or style_layers exist.')
+        # if len(self._remaining_layers) > 0:
+        #     raise Exception('Not all layers provided in content_layes and/or style_layers exist.')
 
     def forward(self, x):
         outs = []

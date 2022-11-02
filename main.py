@@ -29,10 +29,11 @@ w_tv = 5e-4
 content_layers = []
 row1 = ['conv1_1']
 pool1 = ['conv1_1', 'conv1_2']
-style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
+# style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
 
-# style_layers = ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4','conv5_1', 'conv5_2', 'conv5_3', 'conv5_4',]
+style_layers = ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4','conv5_1', 'conv5_2', 'conv5_3', 'conv5_4','pool4', 'pool2', 'pool8']
 # style_layers = ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4',]
+style_layers = ['conv1_1', 'conv1_2', 'pool2', 'conv2_1', 'conv2_2', 'pool4', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'pool8', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4', 'pool12', 'conv5_1', 'conv5_2', 'conv5_3', 'conv5_4', 'pool16']
 
 # Paths
 out_folder = 'outputs'
