@@ -12,7 +12,7 @@ device = 'cpu' # Make sure that if you use cuda that it also runs on CPU
 img_size = 128
 # Sets of hyperparameters that worked well for us
 # if img_size == 128:
-num_steps = 40000
+num_steps = 10000
 w_style_1 = 1
 w_style_2 = 1e8
 w_content = 1
@@ -32,8 +32,8 @@ pool1 = ['conv1_1', 'conv1_2']
 # style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
 
 style_layers = ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4','conv5_1', 'conv5_2', 'conv5_3', 'conv5_4','pool4', 'pool2', 'pool8']
-# style_layers = ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4',]
-style_layers = ['conv1_1', 'conv1_2', 'pool2', 'conv2_1', 'conv2_2', 'pool4', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'pool8', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4', 'pool12', 'conv5_1', 'conv5_2', 'conv5_3', 'conv5_4', 'pool16']
+style_layers = ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4',]
+# style_layers = ['conv1_1', 'conv1_2', 'pool2', 'conv2_1', 'conv2_2', 'pool4', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'pool8', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4']
 
 # Paths
 out_folder = 'outputs'
@@ -105,49 +105,50 @@ def run_single_image(vgg_mean, vgg_std, style_img, num_steps=num_steps,
     optim_img = torch.nn.Parameter(optim_img, requires_grad=True)
 
     # Initialize optimizer and set image as parameter to be optimized
-    optimizer = optim.Adam([optim_img], lr=0.005)
+    optimizer = optim.LBFGS([optim_img])
 
     
     # Training Loop
     iter = [0]
     while iter[0] <= num_steps:
 
+        def closure():
+            # Set gradients to zero before next optimization step
+            optimizer.zero_grad()
 
-        # Set gradients to zero before next optimization step
-        optimizer.zero_grad()
+            # Clamp image to lie in correct range
+            with torch.no_grad():
+                optim_img.clamp_(0, 1)
 
-        # Clamp image to lie in correct range
-        with torch.no_grad():
-            optim_img.clamp_(0, 1)
-
-        # Retrieve features of image that is being optimized
-        normed_img = normalize(optim_img, vgg_mean, vgg_std)
-        input_features = model(normed_img)
-
-
-
-        # TODO: 3. Calculate the style loss
-        if w_style > 0:
-            s_loss = w_style * style_loss(input_features, style_features, style_layers)
-        else:
-            s_loss = torch.tensor([0]).to(device)
+            # Retrieve features of image that is being optimized
+            normed_img = normalize(optim_img, vgg_mean, vgg_std)
+            input_features = model(normed_img)
 
 
-        # Sum up the losses and do a backward pass
-        loss = s_loss
-        loss.backward()
 
-        # Print losses every 50 iterations
-        iter[0] += 1
-        print('iter {}: | Style Loss: {:4f} | Total Loss: {:4f}'.format(
-            iter[0], s_loss.item(), loss.item()))
-        if iter[0] % 100 == 0:
-            save_image(optim_img, title=fileName + str(iter[0]), out_folder=out_folder)
+            # TODO: 3. Calculate the style loss
+            if w_style > 0:
+                s_loss = w_style * style_loss(input_features, style_features, style_layers)
+            else:
+                s_loss = torch.tensor([0]).to(device)
 
+
+            # Sum up the losses and do a backward pass
+            loss = s_loss
+            loss.backward()
+
+            # Print losses every 50 iterations
+            iter[0] += 1
+            print('iter {}: | Style Loss: {:4f} | Total Loss: {:4f}'.format(
+                iter[0], s_loss.item(), loss.item()))
+            if iter[0] % 50 == 0:
+                save_image(optim_img, title=fileName + str(iter[0]), out_folder=out_folder)
+
+            return loss
 
 
         # Do an optimization step as defined in our closure() function
-        optimizer.step()
+        optimizer.step(closure)
     
     # Final clamping
     with torch.no_grad():
