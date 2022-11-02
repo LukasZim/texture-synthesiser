@@ -37,7 +37,7 @@ style_layers = ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2'
 
 # Paths
 out_folder = 'outputs'
-fileName = "pebbles.jpg"
+fileName = "flowers.png"
 style_img_path_1 = os.path.join('data', fileName)
 # style_img_path_1 = os.path.join('data', 'bricks.png')
 # content_img_path = os.path.join('data', 'duck.jpg')
