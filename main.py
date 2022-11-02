@@ -12,7 +12,7 @@ device = 'cpu' # Make sure that if you use cuda that it also runs on CPU
 img_size = 128
 # Sets of hyperparameters that worked well for us
 # if img_size == 128:
-num_steps = 40000000
+num_steps = 40000
 w_style_1 = 1
 w_style_2 = 1e8
 w_content = 1
@@ -27,12 +27,12 @@ w_tv = 5e-4
 # Choose what feature maps to extract for the content and style loss
 # We use the ones as mentioned in Gatys et al. 2016
 content_layers = []
-# style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
 row1 = ['conv1_1']
 pool1 = ['conv1_1', 'conv1_2']
+style_layers = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']
 
 # style_layers = ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4','conv5_1', 'conv5_2', 'conv5_3', 'conv5_4',]
-style_layers = ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4',]
+# style_layers = ['conv1_1', 'conv1_2', 'conv2_1', 'conv2_2', 'conv3_1', 'conv3_2', 'conv3_3', 'conv3_4', 'conv4_1', 'conv4_2', 'conv4_3', 'conv4_4',]
 
 # Paths
 out_folder = 'outputs'
@@ -140,7 +140,7 @@ def run_single_image(vgg_mean, vgg_std, style_img, num_steps=num_steps,
         iter[0] += 1
         print('iter {}: | Style Loss: {:4f} | Total Loss: {:4f}'.format(
             iter[0], s_loss.item(), loss.item()))
-        if iter[0] % 50 == 0:
+        if iter[0] % 100 == 0:
             save_image(optim_img, title=fileName + str(iter[0]), out_folder=out_folder)
 
 
