@@ -8,6 +8,7 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 from helper_functions import *
 
+# loads image from path
 def image_loader(path, img_size=128, device='cpu'):
     img = Image.open(path)
     img = transforms.Resize((img_size, img_size))(img)
@@ -15,6 +16,7 @@ def image_loader(path, img_size=128, device='cpu'):
     img = img.unsqueeze(0)
     return img.to(device, torch.float)
 
+# saves the image to out_folder
 def save_image(tensor, title=None, out_folder=None):
     assert out_folder is not None and title is not None
     plt.figure()
@@ -30,6 +32,7 @@ def save_image(tensor, title=None, out_folder=None):
 
     plt.close()
 
+# the network
 class Vgg19(torch.nn.Module):
     def __init__(self, content_layers, style_layers, device):
         super().__init__()
@@ -48,49 +51,29 @@ class Vgg19(torch.nn.Module):
 
         i = 0
         model = torch.nn.Sequential()
-        for x in vgg.children():
-            print(x)
+
+        # add all layers we want to the network
         for layer in vgg.children():
-            # new_slice = False
             if isinstance(layer, nn.Conv2d):
                 name = self._conv_names[i]
                 i += 1
-            #
-            #     if name in content_layers or name in style_layers:
-            #         new_slice = True
-            #
+
             elif isinstance(layer, nn.ReLU):
                 name = 'relu{}'.format(i)
-            #     # layer = nn.ReLU(inplace=False)
-            #
+
             elif isinstance(layer, nn.MaxPool2d):
                 name = 'pool{}'.format(i)
-            #     if name in content_layers or name in style_layers:
-            #         new_slice = True
-            #         self._remaining_layers.remove(name)
-            #     layer = nn.AvgPool2d(kernel_size=2, stride=2, padding=0, ceil_mode=False)
-            #     self.layer_names.append(name)
-            #
-            #
-            #
+
             elif isinstance(layer, nn.BatchNorm2d):
                 name = 'bn{}'.format(i)
-            #
+
             model.add_module(name, layer)
-            # print(name)
-            # print(layer)
-            # if new_slice:
             self.slices.append(model)
 
             self.layer_names.append(name)
             model = torch.nn.Sequential()
 
-            # if len(self._remaining_layers) < 1:
-            #     break
-        print(self.layer_names)
-        # if len(self._remaining_layers) > 0:
-        #     raise Exception('Not all layers provided in content_layes and/or style_layers exist.')
-
+    # the forward pass of the network
     def forward(self, x):
         outs = []
         for slice in self.slices:

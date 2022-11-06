@@ -9,12 +9,12 @@ torch.manual_seed(2022) # Set random seed for better reproducibility
 device = 'cpu' # Make sure that if you use cuda that it also runs on CPU
 
 # Hyperparameters
-img_size = 128
+img_size = 256
 # Sets of hyperparameters that worked well for us
 # if img_size == 128:
 num_steps = 10000
 w_style_1 = 1
-w_style_2 = 1e8
+w_style_2 = 1e20
 w_content = 1
 w_tv = 5e-4
 # else:
@@ -93,18 +93,18 @@ def run_single_image(vgg_mean, vgg_std, style_img, num_steps=num_steps,
     # Initialize Model
     model = Vgg19(content_layers, style_layers, device)
 
-    # TODO: 1. Normalize Input images
+    # Normalize Input images
     normed_style_img = normalize(style_img, vgg_mean, vgg_std)
     save_image(normed_style_img, title="normalized", out_folder=out_folder)
     # Retrieve feature maps for content and style image
     style_features = model(normed_style_img)
     
-    # Either initialize the image from random noise or from the content image
-    # if random_init:
+    # initialize the image from random noise
     optim_img = torch.randn(style_img.data.size(), device=device)
     optim_img = torch.nn.Parameter(optim_img, requires_grad=True)
 
     # Initialize optimizer and set image as parameter to be optimized
+    # this optimizer works better for larger pictures, if the picture is too small, the optimizer becomes unstable
     optimizer = optim.LBFGS([optim_img])
 
     
@@ -126,7 +126,7 @@ def run_single_image(vgg_mean, vgg_std, style_img, num_steps=num_steps,
 
 
 
-            # TODO: 3. Calculate the style loss
+            #  Calculate the style loss
             if w_style > 0:
                 s_loss = w_style * style_loss(input_features, style_features, style_layers)
             else:
@@ -137,10 +137,12 @@ def run_single_image(vgg_mean, vgg_std, style_img, num_steps=num_steps,
             loss = s_loss
             loss.backward()
 
-            # Print losses every 50 iterations
+            # Print losses every iteration
             iter[0] += 1
             print('iter {}: | Style Loss: {:4f} | Total Loss: {:4f}'.format(
                 iter[0], s_loss.item(), loss.item()))
+
+            # save image every 50 iterations
             if iter[0] % 50 == 0:
                 save_image(optim_img, title=fileName + str(iter[0]), out_folder=out_folder)
 
